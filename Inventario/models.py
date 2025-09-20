@@ -26,7 +26,7 @@ class HistorialMovimiento(models.Model):
        
 class Item(models.Model):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)  
-    sku = models.CharField(max_length=100, unique=True)
+    sku = models.CharField(max_length=100, unique=True) # identificador único
     ingreso = models.ForeignKey(HistorialMovimiento, on_delete=models.CASCADE, related_name='ingresos')
     retiro = models.ForeignKey(HistorialMovimiento, on_delete=models.SET_NULL, null=True, blank=True)
     fecha_retiro = models.DateField(null=True, blank=True)
