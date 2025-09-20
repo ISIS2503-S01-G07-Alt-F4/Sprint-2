@@ -8,6 +8,7 @@ El sprint 2 :)
 4. Ejecutar el comando `docker-compose up --build` en la terminal, en la carpeta donde está este proyecto.
 5. Esperar a que termine de correr (la primera vez puede tardar un poco más).
 6. Usarlo normalmente como si fuera un proyecto de Django normal.
-7. Para ejecutar algun comando en la terminal del contenedor de Django, ejecutar `docker-compose exec django bash`.
-8. Para salir de la terminal del contenedor, ejecutar `exit`.
-9. Ser feliz :D
+7. Cuando lo vuelvan a usar, solo necesitan correr `docker-compose up` (sin el `--build`).
+8. Para ejecutar algun comando en la terminal del contenedor de Django, ejecutar `docker-compose exec django bash`.
+9. Para salir de la terminal del contenedor, ejecutar `exit`.
+10. Ser feliz :D
