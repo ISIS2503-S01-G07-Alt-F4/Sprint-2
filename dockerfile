@@ -9,7 +9,7 @@ COPY . /app
 
 # Instalar dependencias
 RUN pip install --upgrade pip
-RUN pip install django psycopg2-binary
+RUN pip install -r requirements.txt
 
 # Exponer el puerto de Django
 EXPOSE 8000

@@ -1,5 +1,4 @@
 from django.db import models
-from Users.models import Operario
 # Create your models here.
 
 class Bodega(models.Model):
@@ -20,7 +19,7 @@ class Producto(models.Model):
     estanteria = models.ForeignKey(Estanteria, on_delete=models.DO_NOTHING)  # No on_delete porque es agregación
  
 class HistorialMovimiento(models.Model):
-    operario_responsable = models.ForeignKey(Operario, on_delete=models.DO_NOTHING)
+    operario_responsable = models.ForeignKey('Users.Operario', on_delete=models.DO_NOTHING)
     fecha_movimiento = models.DateTimeField(auto_now_add=True)
     tipo_movimiento = models.CharField(max_length=50, choices=[('Ingreso', 'Ingreso'), ('Retiro', 'Retiro')])
        
@@ -29,5 +28,4 @@ class Item(models.Model):
     sku = models.CharField(max_length=100, unique=True) # identificador único
     ingreso = models.ForeignKey(HistorialMovimiento, on_delete=models.CASCADE, related_name='ingresos')
     retiro = models.ForeignKey(HistorialMovimiento, on_delete=models.SET_NULL, null=True, blank=True)
-    fecha_retiro = models.DateField(null=True, blank=True)
     
