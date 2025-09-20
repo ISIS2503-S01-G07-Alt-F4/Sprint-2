@@ -4,28 +4,20 @@
 
 {% block content %}
   <h2>Bodegas</h2>
-  <ul>
-    <div class="container text-center">
-        <div class="row">
-          {% for bodega in bodegas %}
-          <div class="col">
-            Column
-          </div>
-          <div class="col">
-            Column
-          </div>
-          <div class="col">
-            Column
+  <div class="container">
+    <div class="row">
+      {% for bodega in bodegas %}
+        <div class="col-md-4 mb-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title">{{ bodega.ciudad }}</h5>
+              <p class="card-text">{{ bodega.direccion }}</p>
+              <a href="#" class="btn btn-primary">Ver inventario</a>
+              <a href="#" class="btn btn-secondary">Agregar producto</a>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="card" style="width: 18rem;">
-        <div class="card-body">
-          <h5 class="card-title">{{ bodega.ciudad }}</h5>
-          <p class="card-text">{{ bodega.direccion }}</p>
-          <a href="#" class="btn btn-primary">Go somewhere</a>
-        </div>
-      </div>
-    {% endfor %}
-  </ul>
+      {% endfor %}
+    </div>
+  </div>
 {% endblock %}
