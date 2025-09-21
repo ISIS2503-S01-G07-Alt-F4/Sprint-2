@@ -9,49 +9,65 @@
         <title>WMS Provesi</title>
         {% endblock %}
     </head>
-    <body>
-        <div class="container">
-            <ul class="nav bg-info">
-                <li class="nav-item">
-                    <a class="nav-link link-light" href="/">Inicio</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link link-light" href="/inventario/producto">Registrar Producto</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link link-light" href="/inventario/inventario">Inventario</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link link-light" href="/inventario/bodega">Bodegas</a>
-                </li>
-
-                <li class="nav-item">
-                    <h5 class="nav-link link-light">Usuario: {% if user.is_authenticated %} {{ user.nombre }} {{ user.apellido }} - Rol: {{ user.rol }} {% else %} Invitado {% endif %}</h5>
-            </ul>
-
-
-        </div>
-        <br>
-        <main>
-            <div class="container" style="min-height: 580px;">
-                {% block content %}
-                {% endblock %}
+    <body class="d-flex flex-column min-vh-100">
+        <!-- Navbar-->
+        <nav class="navbar navbar-dark bg-primary shadow-sm">
+            <div class="container">
+                <a class="navbar-brand fw-bold" href="/">
+                    <i class="me-2"></i>WMS Provesi
+                </a>
+                
+                <ul class="navbar-nav d-flex flex-row">
+                    <li class="nav-item me-4">
+                        <a class="nav-link fw-semibold" href="/">Inicio</a>
+                    </li>
+                    <li class="nav-item me-4">
+                        <a class="nav-link fw-semibold" href="/inventario/producto">Registrar Producto</a>
+                    </li>
+                    <li class="nav-item me-4">
+                        <a class="nav-link fw-semibold" href="/inventario/inventario">Inventario</a>
+                    </li>
+                    <li class="nav-item me-4">
+                        <a class="nav-link fw-semibold" href="/inventario/bodegas/">Bodegas</a>
+                    </li>
+                </ul>
+                
+                <!-- Información del usuario y sesión -->
+                <div class="d-flex align-items-center">
+                    {% if user.is_authenticated %}
+                        <div class="navbar-text text-light me-3">
+                            <span class="badge bg-light text-primary me-2 px-2 py-1">{{ user.rol }}</span>
+                            <strong>{{ user.nombre }}</strong>
+                        </div>
+                        <a href="/usuarios/logout/" class="btn btn-outline-light bg-danger btn-sm">Cerrar Sesión</a>
+                    {% else %}
+                        <div class="navbar-text text-light me-3">
+                            <span class="fw-light">Invitado</span>
+                        </div>
+                        <a href="/usuarios/login/" class="btn btn-outline-light btn-sm">Iniciar Sesión</a>
+                        <a href="/usuarios/crearusuario/" class="btn btn-outline-light bg-success btn-sm">Crear un usuario</a>
+                    {% endif %}
+                </div>
             </div>
+        </nav>
+
+        <main class="container mt-4 flex-grow-1">
+            {% block content %}
+            {% endblock %}
         </main>
 
-    </body>
-
-    <!-- Footer -->
-        <footer style="background-color: #D8D8D8; position: relative; bottom: 0; width: 100%; height: 100px;">
-
-            <div style="padding: 30px">
-                <div style="float: left; width: 400px;" >ISIS-2503 Arquitectura y Diseño de Software S1 Grupo 7 Alt+f4</div>
-                <div style="float: right; width: 220px;" >Universidad de los Andes</div>
-                <br>
+        <footer class="bg-light text-center py-4 mt-auto">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 text-md-start">
+                        <small class="text-muted">ISIS-2503 Arquitectura y Diseño de Software S1 Grupo 7 Alt+f4</small>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <small class="text-muted">Universidad de los Andes</small>
+                    </div>
+                </div>
             </div>
-            <br>
-
         </footer>
-    <!-- Footer -->
 
+    </body>
 </html>

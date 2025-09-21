@@ -4,10 +4,9 @@ from django.contrib import messages
 from django.urls import reverse
 
 from Users.forms import UsuarioCreateForm, UsuarioLoginForm
-from Users.logic.logic_usuario import login_usuario
+from Users.logic.logic_usuario import login_usuario, cerrar_sesion
 from Users.models import Usuario, JefeBodega, Operario
-# from .logic.logic_usuario import create_usuario
-
+from Users.logic.logic_usuario import create_usuario
 # Create your views here.
 
 def usuario_login(request):
@@ -30,40 +29,16 @@ def usuario_login(request):
     }
     return render(request, 'Usuario/usuarioLogin.html', context)
 
-
+def usuario_logout(request):
+    cerrar_sesion(request)
+    return HttpResponseRedirect(reverse('usuarioLogin'))
 
 def usuario_create(request):
     if request.method == 'POST':
         form = UsuarioCreateForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            modelos = {
-                'Usuario': Usuario,
-                'JefeBodega': JefeBodega,
-                'Operario': Operario
-            }
-            modelo = modelos.get(data['rol'])
-            try:
-                if data['rol'] == 'JefeBodega':
-                    modelo.objects.create_user(
-                        login=data['login'],
-                        password=data['contraseña'],
-                        nombre=data['nombre'],
-                        apellido=data['apellido'],
-                        bodega=data['bodega'],
-                        rol=data['rol']
-                    )
-                else:
-                    modelo.objects.create_user(
-                        login=data['login'],
-                        password=data['contraseña'],
-                        nombre=data['nombre'],
-                        apellido=data['apellido'],
-                        rol=data['rol']
-                    )
-                messages.add_message(request, messages.SUCCESS, "Usuario creado correctamente")
-            except Exception as e:
-                messages.add_message(request, messages.ERROR, f"Error: {e}")
+            create_usuario(data)
             return HttpResponseRedirect(reverse('usuarioCreate'))
         else:
             print(form.errors)
