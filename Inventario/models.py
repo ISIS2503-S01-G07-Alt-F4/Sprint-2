@@ -5,6 +5,9 @@ class Bodega(models.Model):
     ciudad = models.CharField(max_length=100)
     direccion = models.CharField(max_length=200)
     
+    def __str__(self):
+        return f"{self.ciudad} - {self.direccion}"
+    
 class Estanteria(models.Model):
     area_bodega = models.CharField(max_length=100)
     numero_estanteria = models.CharField(max_length=50)
