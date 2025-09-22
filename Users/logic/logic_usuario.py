@@ -23,13 +23,17 @@ def create_usuario(data):
         }
         
         if data['rol'] == 'JefeBodega':
-            datos_usuario['bodega'] = data['bodega']
+            # JefeBodega: tomar la primera bodega de la lista
+            bodegas_seleccionadas = data.get('bodegas', [])
+            if bodegas_seleccionadas:
+                datos_usuario['bodega'] = bodegas_seleccionadas[0]
             usuario = modelo.objects.create_user(**datos_usuario)
             
         elif data['rol'] == 'Operario':
-            # Operario tiene ManyToManyField, crear primero y luego asignar
             usuario = modelo.objects.create_user(**datos_usuario)
-            usuario.bodega.set([data['bodega']])  # Usar .set() para ManyToMany
+            bodegas_seleccionadas = data.get('bodegas', [])
+            if bodegas_seleccionadas:
+                usuario.bodega.set(bodegas_seleccionadas) 
             
         else:
             usuario = modelo.objects.create_user(**datos_usuario)

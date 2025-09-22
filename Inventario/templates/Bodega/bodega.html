@@ -4,7 +4,7 @@
   {% if rol == "JefeBodega" or rol == "Operario" %}
     Lista de Bodegas
   {% else %}
-    Acceso Denegado
+    Acceso Restringido
   {% endif %}
 {% endblock %}
 
@@ -29,7 +29,6 @@
       </div>
     </div>
   {% else %}
-    <h2>Acceso Denegado</h2>
-    <p>No tienes permiso para ver esta página.</p>
+    {% include 'acceso_denegado.html' with mensaje="Solo los Jefes de Bodega y Operarios pueden ver las bodegas." mostrar_boton_inicio=True %}
   {% endif %}
 {% endblock %}

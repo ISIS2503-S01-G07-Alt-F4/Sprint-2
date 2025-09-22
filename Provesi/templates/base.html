@@ -22,7 +22,7 @@
                         <a class="nav-link fw-semibold" href="/">Inicio</a>
                     </li>
                     <li class="nav-item me-4">
-                        <a class="nav-link fw-semibold" href="/inventario/producto">Registrar Producto</a>
+                        <a class="nav-link fw-semibold" href="/inventario/producto/crear">Registrar Producto</a>
                     </li>
                     <li class="nav-item me-4">
                         <a class="nav-link fw-semibold" href="/inventario/inventario">Inventario</a>
@@ -35,6 +35,29 @@
                 <!-- Información del usuario y sesión -->
                 <div class="d-flex align-items-center">
                     {% if user.is_authenticated %}
+                        <!-- Selector de bodega para operarios -->
+                        {% if es_operario and bodegas_operario %}
+                            <div class="dropdown me-3">
+                                <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    {% if bodega_actual %}
+                                        {{ bodega_actual.ciudad }}
+                                    {% else %}
+                                        Seleccionar Bodega
+                                    {% endif %}
+                                </button>
+                                <ul class="dropdown-menu">
+                                    {% for bodega in bodegas_operario %}
+                                        <li>
+                                            <a class="dropdown-item {% if bodega_actual and bodega.id == bodega_actual.id %}active{% endif %}" 
+                                               href="{% url 'seleccionarBodega' bodega.id %}">
+                                                {{ bodega.ciudad }} - {{ bodega.direccion }}
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                        
                         <div class="navbar-text text-light me-3">
                             <span class="badge bg-light text-primary me-2 px-2 py-1">{{ user.rol }}</span>
                             <strong>{{ user.nombre }}</strong>
@@ -44,8 +67,8 @@
                         <div class="navbar-text text-light me-3">
                             <span class="fw-light">Invitado</span>
                         </div>
-                        <a href="/usuarios/login/" class="btn btn-outline-light btn-sm">Iniciar Sesión</a>
-                        <a href="/usuarios/crearusuario/" class="btn btn-outline-light bg-success btn-sm">Crear un usuario</a>
+                        <a href="/usuarios/login/" class="btn btn-outline-light btn-sm me-2">Iniciar Sesión</a>
+                        <a href="/usuarios/crearusuario/" class="btn btn-outline-light bg-success btn-sm">Crear Usuario</a>
                     {% endif %}
                 </div>
             </div>
