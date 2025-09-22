@@ -5,7 +5,19 @@ from django.contrib import messages
 from Inventario.forms import ProductoForm
 from Inventario.logic.logic_inventario import get_bodegas
 from Inventario.logic.logic_bodega import get_bodega_usuario, get_bodegas_operario
-from Inventario.logic.logic_producto import registrar_producto
+from Inventario.logic.logic_producto import registrar_producto, obtener_productos
+
+def inventario_view(request):
+    if request.user.is_authenticated:
+        rol = request.user.rol
+    else:
+        rol = None
+    print(request.user)
+    productos = obtener_productos()
+    return render(request, 'Inventario/inventario.html',{
+            'rol':rol,
+            'productos': productos
+    })
 
 def bodega_list(request):
     if request.user.is_authenticated:

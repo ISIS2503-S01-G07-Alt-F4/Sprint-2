@@ -16,3 +16,5 @@ def crear_estanteria(data: dict) -> Estanteria:
 def registrar_item(data: dict) -> Item:
     item = Item.objects.create(**data)
     return item
+
+
