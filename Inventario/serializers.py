@@ -23,6 +23,23 @@ class ProductoSerializer(serializers.ModelSerializer):
             'bodega_info'
         ]
 
+    def get_estanteria_info(self, obj):
+        if obj.estanteria:
+            return {
+                'area_bodega': obj.estanteria.area_bodega,
+                'numero_estanteria': obj.estanteria.numero_estanteria,
+            }
+        return None
+    
+    def get_bodega_info(self, obj):
+        if obj.estanteria and obj.estanteria.bodega:
+            bodega = obj.estanteria.bodega
+            return {
+                'ciudad': bodega.ciudad,
+                'direccion': bodega.direccion
+            }
+        return None
+    
 
 class ProductoCreateSerializer(serializers.ModelSerializer):
     """
