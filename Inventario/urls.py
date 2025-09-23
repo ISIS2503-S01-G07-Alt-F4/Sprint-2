@@ -1,9 +1,13 @@
 from django.urls import path
 from . import views
+from . import api_views
 
 urlpatterns = [
+    # URLs para vistas web tradicionales
     path('producto/crear', views.crear_producto, name='productoCreate'),
     path('bodegas/', views.bodega_list, name='bodegaList'),
     path('seleccionar-bodega/<int:bodega_id>/', views.seleccionar_bodega, name='seleccionarBodega'),
-    path("inventario/", views.inventario_view, name="verInventario")
+    path("", views.inventario_view, name="verInventario"),
+    # URLs para API REST
+    path('api/productos/crear/', api_views.crear_producto_api, name='api_crear_producto')
 ]
