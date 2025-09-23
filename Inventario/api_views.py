@@ -40,4 +40,4 @@ def crear_producto_api(request):
     return procesar_creacion_producto_completa(request.data)
 
 def health_check(request):
-    return Response({"status": "ok"})
+    return Response({"status": "ok"}, status=200)
