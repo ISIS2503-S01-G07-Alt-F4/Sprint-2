@@ -39,5 +39,6 @@ def crear_producto_api(request):
     """
     return procesar_creacion_producto_completa(request.data)
 
+@api_view(['GET'])
 def health_check(request):
     return Response({"status": "ok"}, status=200)
