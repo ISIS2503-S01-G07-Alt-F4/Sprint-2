@@ -6,9 +6,9 @@ from django.views.decorators.csrf import csrf_exempt
 from .logic.logic_api import procesar_creacion_producto_completa
 
 
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny]) 
+@csrf_exempt
 def crear_producto_api(request):
     """
     Endpoint para crear un nuevo producto
