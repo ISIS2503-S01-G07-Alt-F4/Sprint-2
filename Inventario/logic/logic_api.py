@@ -2,8 +2,10 @@
 Lógica de negocio para la API de productos
 Coherente con el patrón de autenticación usado en el sistema
 """
-
+import time
 from django.contrib.auth import authenticate
+from django.core.cache import cache
+from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -15,6 +17,7 @@ from Inventario.logic.logic_bodega import get_bodegas_operario
 def autenticar_usuario_api(username, password):
     """
     Autentica un usuario para la API usando el sistema de autenticación de Django
+    con caché para mejorar el rendimiento
     
     Returns:
         tuple: (user_object, error_response)
@@ -23,9 +26,28 @@ def autenticar_usuario_api(username, password):
     if not username or not password:
         return None, Response({'error': 'Se requieren username y password para la autenticación','codigo': 'AUTH_REQUIRED'}, status=status.HTTP_400_BAD_REQUEST)
     
+    cache_key = f'user_auth_{username}'
+    
+    # Intentar obtener usuario del cache
+    login_en_cache = cache.get(cache_key)
+    
+    if login_en_cache:
+        # Usuario encontrado en cache
+        try:
+            user_model = get_user_model()
+            user = user_model.objects.get(id=login_en_cache)
+            return user, None
+        except user_model.DoesNotExist:
+            cache.delete(cache_key)
+    
+    # Usuario no está en cache, se autentica normal
     user = authenticate(username=username, password=password)
     if not user:
         return None, Response({'error': 'Credenciales inválidas','codigo': 'INVALID_CREDENTIALS'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+    # Guardar usuario en cache por 5 minutos
+    cache.set(cache_key, user.id, timeout=300)
+    
     return user, None
 
 
@@ -129,6 +151,7 @@ def procesar_creacion_producto_completa(request_data):
     Coherente con el sistema de autenticación usado en las vistas web
     """
     try:
+        tiempo_inicio = time.time()
         # 1. Autenticar usuario usando username/password en el body (como en las vistas web)
         username = request_data.get('username')
         password = request_data.get('password')
@@ -136,15 +159,16 @@ def procesar_creacion_producto_completa(request_data):
         user, error_response = autenticar_usuario_api(username, password)
         if error_response:
             return error_response
-        
+        tiempo_autenticacion = time.time() - tiempo_inicio
+        print(f"Tiempo autenticación: {tiempo_autenticacion:.4f}s", flush=True)
         # 2. Verificar permisos
         tiene_permisos, mensaje = verificar_permisos_producto(user)
         if not tiene_permisos:
             return Response({'error': mensaje,'codigo': 'INSUFFICIENT_PERMISSIONS'}, status=status.HTTP_403_FORBIDDEN)
-
+        tiempo_verificacion_permisos = time.time() - tiempo_inicio
         # 3. Validar datos del producto
         producto_data, campos_faltantes = validar_datos_producto(request_data)
-        
+        tiempo_validacion_datos = time.time() - tiempo_inicio
         if campos_faltantes != []:
             return Response({'error': f'Campos requeridos faltantes: {", ".join(campos_faltantes)}','codigo': 'MISSING_FIELDS','campos_faltantes': campos_faltantes}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -153,12 +177,26 @@ def procesar_creacion_producto_completa(request_data):
         _, error_response = validar_estanteria_acceso(producto_data['estanteria'], user, bodega_seleccionada_id)
         if error_response:
             return error_response
-        
+        tiempo_validacion_estanteria = time.time() - tiempo_inicio
         # 5. Crear producto
         success_response, error_response = crear_producto_logica(user, producto_data)
         if error_response:
             return error_response
-        return success_response
+        tiempo_creacion_producto = time.time() - tiempo_inicio
+        print(f"Tiempo creación producto: {tiempo_creacion_producto}")
+        return Response({
+            'mensaje': 'Producto creado exitosamente',
+            'producto': success_response.data.get('producto'),
+            'tiempos': {
+                'autenticacion': tiempo_autenticacion,
+                'verificacion_permisos': tiempo_verificacion_permisos,
+                'validacion_datos': tiempo_validacion_datos,
+                'validacion_estanteria': tiempo_validacion_estanteria,
+                'creacion_producto': tiempo_creacion_producto,
+                'total': time.time() - tiempo_inicio
+            },
+            'codigo': 'SUCCESS'
+        }, status=status.HTTP_201_CREATED)
         
     except Exception as e:
         return Response({'error': f'Error interno del servidor: {str(e)}','codigo': 'INTERNAL_ERROR'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
