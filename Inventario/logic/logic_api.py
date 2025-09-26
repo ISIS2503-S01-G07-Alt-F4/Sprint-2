@@ -24,7 +24,7 @@ def autenticar_usuario_api(username, password):
         Si hay error, user_object será None y error_response contendrá la respuesta de error
     """
     if not username or not password:
-        return None, Response({'error': 'Se requieren username y password para la autenticación','codigo': 'AUTH_REQUIRED'}, status=status.HTTP_400_BAD_REQUEST)
+        return None, Response({'error': 'Se requieren username y password para la autenticación'}, status=status.HTTP_400_BAD_REQUEST)
     
     cache_key = f'user_auth_{username}'
     
@@ -43,7 +43,7 @@ def autenticar_usuario_api(username, password):
     # Usuario no está en cache, se autentica normal
     user = authenticate(username=username, password=password)
     if not user:
-        return None, Response({'error': 'Credenciales inválidas','codigo': 'INVALID_CREDENTIALS'}, status=status.HTTP_401_UNAUTHORIZED)
+        return None, Response({'error': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
     
     # Guardar usuario en cache por 5 minutos
     cache.set(cache_key, user.id, timeout=300)
@@ -116,12 +116,12 @@ def validar_estanteria_acceso(estanteria_id, usuario, bodega_seleccionada_id=Non
         estanteria_id = int(estanteria_id)
         estanteria = Estanteria.objects.get(id=estanteria_id)
     except (ValueError, Estanteria.DoesNotExist):
-        return None, Response({'error': 'Estantería no válida o no encontrada','codigo': 'INVALID_ESTANTERIA'}, status=status.HTTP_400_BAD_REQUEST)
+        return None, Response({'error': 'Estantería no válida o no encontrada'}, status=status.HTTP_400_BAD_REQUEST)
 
     # Verificar acceso a la estantería según el rol del usuario
     estanterias_disponibles = obtener_estanterias_usuario(usuario, bodega_seleccionada_id)
     if not estanterias_disponibles.filter(id=estanteria_id).exists():
-        return None, Response({'error': 'No tienes acceso a esta estantería o bodega','codigo': 'ACCESS_DENIED_ESTANTERIA'}, status=status.HTTP_403_FORBIDDEN)
+        return None, Response({'error': 'No tienes acceso a esta estantería o bodega'}, status=status.HTTP_403_FORBIDDEN)
     return estanteria, None
 
 
@@ -137,12 +137,12 @@ def crear_producto_logica(usuario, producto_data):
             producto = serializer.save()
             # Serializar la respuesta con información completa
             response_serializer = ProductoSerializer(producto)
-            return Response({'mensaje': 'Producto creado exitosamente', 'producto': response_serializer.data, 'codigo': 'SUCCESS'}, status=status.HTTP_201_CREATED), None
+            return Response({'mensaje': 'Producto creado exitosamente', 'producto': response_serializer.data}, status=status.HTTP_201_CREATED), None
         else:
-            return None, Response({'error': 'Datos inválidos','errores': serializer.errors,'codigo': 'VALIDATION_ERROR'}, status=status.HTTP_400_BAD_REQUEST)
-            
+            return None, Response({'error': 'Datos inválidos','errores': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
     except Exception as e:
-        return None, Response({'error': f'Error interno del servidor: {str(e)}','codigo': 'INTERNAL_ERROR'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return None, Response({'error': f'Error interno del servidor: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 def procesar_creacion_producto_completa(request_data):
@@ -152,7 +152,7 @@ def procesar_creacion_producto_completa(request_data):
     """
     try:
         tiempo_inicio = time.time()
-        # 1. Autenticar usuario usando username/password en el body (como en las vistas web)
+        # 1. Autenticar usuario 
         username = request_data.get('username')
         password = request_data.get('password')
         
@@ -160,17 +160,18 @@ def procesar_creacion_producto_completa(request_data):
         if error_response:
             return error_response
         tiempo_autenticacion = time.time() - tiempo_inicio
-        print(f"Tiempo autenticación: {tiempo_autenticacion:.4f}s", flush=True)
+        
         # 2. Verificar permisos
         tiene_permisos, mensaje = verificar_permisos_producto(user)
         if not tiene_permisos:
-            return Response({'error': mensaje,'codigo': 'INSUFFICIENT_PERMISSIONS'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': mensaje}, status=status.HTTP_403_FORBIDDEN)
         tiempo_verificacion_permisos = time.time() - tiempo_inicio
+        
         # 3. Validar datos del producto
         producto_data, campos_faltantes = validar_datos_producto(request_data)
         tiempo_validacion_datos = time.time() - tiempo_inicio
         if campos_faltantes != []:
-            return Response({'error': f'Campos requeridos faltantes: {", ".join(campos_faltantes)}','codigo': 'MISSING_FIELDS','campos_faltantes': campos_faltantes}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': f'Campos requeridos faltantes: {", ".join(campos_faltantes)}','campos_faltantes': campos_faltantes}, status=status.HTTP_400_BAD_REQUEST)
         
         # 4. Validar estantería y acceso
         bodega_seleccionada_id = request_data.get('bodega_seleccionada')
@@ -178,12 +179,12 @@ def procesar_creacion_producto_completa(request_data):
         if error_response:
             return error_response
         tiempo_validacion_estanteria = time.time() - tiempo_inicio
+        
         # 5. Crear producto
         success_response, error_response = crear_producto_logica(user, producto_data)
         if error_response:
             return error_response
         tiempo_creacion_producto = time.time() - tiempo_inicio
-        print(f"Tiempo creación producto: {tiempo_creacion_producto}")
         return Response({
             'mensaje': 'Producto creado exitosamente',
             'producto': success_response.data.get('producto'),
@@ -194,9 +195,8 @@ def procesar_creacion_producto_completa(request_data):
                 'validacion_estanteria': tiempo_validacion_estanteria,
                 'creacion_producto': tiempo_creacion_producto,
                 'total': time.time() - tiempo_inicio
-            },
-            'codigo': 'SUCCESS'
+            }
         }, status=status.HTTP_201_CREATED)
         
     except Exception as e:
-        return Response({'error': f'Error interno del servidor: {str(e)}','codigo': 'INTERNAL_ERROR'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': f'Error interno del servidor: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
