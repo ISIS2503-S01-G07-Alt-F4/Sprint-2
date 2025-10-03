@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Producto, Estanteria, Bodega
+from .models import Pedido, Producto, Estanteria, Bodega
 
 
 class ProductoSerializer(serializers.ModelSerializer):
@@ -60,3 +60,21 @@ class ProductoCreateSerializer(serializers.ModelSerializer):
         self.usuario = kwargs.pop('usuario', None)
         super().__init__(*args, **kwargs)
         
+
+
+
+#Pedido
+
+class PedidoCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pedido
+        fields = ['cliente'] 
+    def __init__(self, *args, **kwargs):
+        self.usuario = kwargs.pop('usuario', None)
+        super().__init__(*args, **kwargs)
+    
+
+class PedidoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pedido
+        fields = '__all__' 

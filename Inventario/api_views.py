@@ -1,3 +1,4 @@
+from Inventario.logic.logic_pedido import procesar_creacion_pedido_completa
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -38,6 +39,29 @@ def crear_producto_api(request):
     }
     """
     return procesar_creacion_producto_completa(request.data)
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny]) 
+def crear_pedido_api(request):
+    """
+    Endpoint para crear un nuevo pedido
+    
+    Parámetros requeridos en el body JSON:
+    - username: Usuario para autenticación
+    - password: Contraseña para autenticación
+    - nombre: Nombre del cliente asociado al pedido
+    - numTelefono: Número de telefono del cliente asociado al pedido
+    
+    Ejemplo de request:
+    {
+        "username": "operario1",
+        "password": "password123",
+        "nombre":"Juan José",
+        "numTelefono":"3125114932"
+    }
+    """
+    return procesar_creacion_pedido_completa(request.data)
 
 def health_check(request):
     return Response({"status": "ok"}, status=200)

@@ -38,3 +38,72 @@ class Item(models.Model):
     ingreso = models.ForeignKey(HistorialMovimiento, on_delete=models.CASCADE, related_name='ingresos')
     retiro = models.ForeignKey(HistorialMovimiento, on_delete=models.SET_NULL, null=True, blank=True)
     
+
+
+
+class Cliente(models.Model):
+    id = models.AutoField(primary_key=True)  
+    nombre = models.CharField(max_length=100)
+    numero_telefono = models.CharField(max_length=15)
+
+class Factura(models.Model):
+    id = models.CharField(max_length=50, primary_key=True) 
+    costo_total = models.FloatField()
+    metodo_pago = models.CharField(max_length=50)
+    num_cuenta = models.CharField(max_length=50)
+    comprobante = models.CharField(max_length=100)
+
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name="facturas")
+
+class Pedido(models.Model):
+    class Estado(models.TextChoices):
+        TRANSITO = "Transito", "Transito"
+        ALISTAMIENTO = "Alistamiento", "Alistamiento"
+        POR_VERIFICAR = "Por verificar", "Por verificar"
+        RECHAZADOXVERIFICAR = "Rechazado x verificar", "Rechazado x verificar"
+        VERIFICADO = "Verificado","Verificado"
+        EMPACADOXDESPACHAR = "Empacado x despachar", "Empacado x despachar"
+        DESPACHADO = "Despachado", "Despachado"
+        DESPACHADOXFACTURAR = "Despachado x facturar", "Despachado x facturar"
+        ENTREGADO = "Entregado", "Entregado"
+        DEVUELTO  = "Devuelto","Devuelto"
+        PRODUCCION = "Produccion", "Produccion"
+        BORDADO = "Bordado", "Bordado"
+        DROPSHIPPING = "Dropshipping", "Dropshipping"
+        COMPRA = "Compra", "Compra"
+        ANULADO = "Anulado", "Anulado"
+        
+
+    estado = models.CharField(
+        max_length=30,
+        choices=Estado.choices,
+        default=Estado.ALISTAMIENTO
+    )
+    id = models.AutoField(primary_key=True)
+    items = models.ManyToManyField('Item', related_name='pedidos')  
+    factura = models.OneToOneField(Factura,on_delete=models.CASCADE,related_name="pedido",null=True,blank=True)
+    cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE, related_name='pedidos')
+
+class ProductoSolicitado(models.Model):
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="productos_solicitados")
+    cantidad = models.PositiveIntegerField()
+    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.cantidad} x {self.producto.nombre}"
+
+
+
+
+
+    
+
+# class Envio(models.Model):
+#     id_envio = models.AutoField(primary_key=True)  
+#     direccion = models.CharField(max_length=200)
+#     ciudad = models.CharField(max_length=100)
+#     #imagen = models.ImageField(upload_to="envios/", null=True, blank=True) Esto de momento lo comentamos porque no sabemos como funciona
+#     fecha_envio = models.DateField()
+
+
+

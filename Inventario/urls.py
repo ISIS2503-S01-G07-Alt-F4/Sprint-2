@@ -10,5 +10,6 @@ urlpatterns = [
     path("", views.inventario_view, name="verInventario"),
     # URLs para API REST
     path('api/productos/crear/', api_views.crear_producto_api, name='api_crear_producto'),
-    path('api/health-check/', api_views.health_check, name='api_health_check')
+    path('api/health-check/', api_views.health_check, name='api_health_check'),
+    path('pedidos/crear', api_views.crear_pedido_api, name='api_crear_pedido')
 ]
