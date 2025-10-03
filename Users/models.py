@@ -40,3 +40,6 @@ class Operario(Usuario):
 
 class JefeBodega(Usuario):
     bodega = models.ForeignKey('Inventario.Bodega', on_delete=models.DO_NOTHING)
+
+class Vendedor(Usuario):
+    bodega = models.ManyToManyField('Inventario.Bodega')

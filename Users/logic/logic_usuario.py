@@ -1,4 +1,4 @@
-from ..models import Usuario, JefeBodega, Operario
+from ..models import Usuario, JefeBodega, Operario, Vendedor
 from django.contrib.auth import authenticate, login, logout 
 from django.contrib import messages
 def get_usuarios():
@@ -9,7 +9,8 @@ def create_usuario(data):
     modelos = {
         'Usuario': Usuario,
         'JefeBodega': JefeBodega,
-        'Operario': Operario
+        'Operario': Operario,
+        'Vendedor':Vendedor
     }
     modelo = modelos.get(data['rol'])
     
@@ -34,7 +35,11 @@ def create_usuario(data):
             bodegas_seleccionadas = data.get('bodegas', [])
             if bodegas_seleccionadas:
                 usuario.bodega.set(bodegas_seleccionadas) 
-            
+        elif data['rol'] == 'Vendedor':
+            usuario = modelo.objects.create_user(**datos_usuario)
+            bodegas_seleccionadas = data.get('bodegas', [])
+            if bodegas_seleccionadas:
+                usuario.bodega.set(bodegas_seleccionadas) 
         else:
             usuario = modelo.objects.create_user(**datos_usuario)
             

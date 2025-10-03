@@ -1,5 +1,6 @@
+from Users.models import Operario
 from rest_framework import serializers
-from .models import Pedido, Producto, Estanteria, Bodega
+from .models import Cliente, Item, Pedido, Producto, Estanteria, Bodega, ProductoSolicitado
 
 
 class ProductoSerializer(serializers.ModelSerializer):
@@ -61,20 +62,69 @@ class ProductoCreateSerializer(serializers.ModelSerializer):
         super().__init__(*args, **kwargs)
         
 
+#ProductoSolicitado
+
+class ProductoSolicitadoSerializer(serializers.ModelSerializer):
+    producto = serializers.SlugRelatedField(
+        slug_field='codigo_barras',  # ← Usar código de barras en lugar de ID
+        queryset=Producto.objects.all()
+    )
+    class Meta:
+        model = ProductoSolicitado
+        fields = ['producto', 'cantidad']
+
 
 
 #Pedido
 
 class PedidoCreateSerializer(serializers.ModelSerializer):
+    # class Meta:
+    #     model = Pedido
+    #     fields = ['cliente'] 
+    # def __init__(self, *args, **kwargs):
+    #     self.usuario = kwargs.pop('usuario', None)
+    #     super().__init__(*args, **kwargs)
+    items = serializers.SlugRelatedField(
+        many=True, 
+        slug_field='sku',
+        queryset=Item.objects.all()
+    )
+    productos_solicitados = ProductoSolicitadoSerializer(many=True, required=False)
+    operario = serializers.SlugRelatedField(
+        slug_field='login',  # ← Usar login en lugar de ID
+        queryset=Operario.objects.all()
+    )
+    
+    
     class Meta:
         model = Pedido
-        fields = ['cliente'] 
-    def __init__(self, *args, **kwargs):
-        self.usuario = kwargs.pop('usuario', None)
-        super().__init__(*args, **kwargs)
+        fields = ['cliente', 'estado', 'items', 'operario', 'productos_solicitados']
+    
+    def create(self, validated_data):
+        productos_solicitados_data = validated_data.pop('productos_solicitados', [])
+        items_data = validated_data.pop('items', [])
+        
+        pedido = Pedido.objects.create(**validated_data)
+        
+        if items_data:
+            pedido.items.set(items_data)
+        
+        for producto_data in productos_solicitados_data:
+            ProductoSolicitado.objects.create(pedido=pedido, **producto_data)
+        
+        return pedido
     
 
 class PedidoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pedido
-        fields = '__all__' 
+        fields = '__all__'
+
+
+class PedidoUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pedido
+        fields = ['estado','operario'] 
+    #No puse que se pueda modificar los items porque a priori como esa info se supone que nos llega de la base de datos del ERP no debería poder
+    #cambiarse el pedido fuera del estado en el que esta y el operario que lo esta atendiendo.
+

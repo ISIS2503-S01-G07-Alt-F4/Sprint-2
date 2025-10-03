@@ -11,5 +11,6 @@ urlpatterns = [
     # URLs para API REST
     path('api/productos/crear/', api_views.crear_producto_api, name='api_crear_producto'),
     path('api/health-check/', api_views.health_check, name='api_health_check'),
-    path('pedidos/crear', api_views.crear_pedido_api, name='api_crear_pedido')
+    path('pedidos/crear', api_views.crear_pedido_api, name='api_crear_pedido'),
+    path('pedidos/cambiar_estado', api_views.cambiar_estado_pedido_api, name='api_cambiar_estado_pedido')
 ]

@@ -1,4 +1,5 @@
 from django.db import models
+
 # Create your models here.
 
 class Bodega(models.Model):
@@ -47,7 +48,8 @@ class Cliente(models.Model):
     numero_telefono = models.CharField(max_length=15)
 
 class Factura(models.Model):
-    id = models.CharField(max_length=50, primary_key=True) 
+    #id = models.CharField(max_length=50, primary_key=True) No tiene ninguna utilidad real que el id no sea autogenerado sino que sea artificial, nos complicamos más
+    id= models.AutoField(primary_key=True) 
     costo_total = models.FloatField()
     metodo_pago = models.CharField(max_length=50)
     num_cuenta = models.CharField(max_length=50)
@@ -82,13 +84,15 @@ class Pedido(models.Model):
     id = models.AutoField(primary_key=True)
     items = models.ManyToManyField('Item', related_name='pedidos')  
     factura = models.OneToOneField(Factura,on_delete=models.CASCADE,related_name="pedido",null=True,blank=True)
-    cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE, related_name='pedidos')
+    cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE, related_name='pedidos', null=True, blank=True)
+    operario = models.ForeignKey('Users.Operario', on_delete=models.DO_NOTHING, null=True, blank=True)
+
 
 class ProductoSolicitado(models.Model):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="productos_solicitados")
     cantidad = models.PositiveIntegerField()
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)
-
+    
     def __str__(self):
         return f"{self.cantidad} x {self.producto.nombre}"
 
