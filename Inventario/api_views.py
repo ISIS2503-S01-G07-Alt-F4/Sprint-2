@@ -7,9 +7,9 @@ from django.views.decorators.csrf import csrf_exempt
 from .logic.logic_api import procesar_creacion_producto_completa
 
 
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny]) 
+@csrf_exempt
 def crear_producto_api(request):
     """
     Endpoint para crear un nuevo producto
@@ -120,5 +120,6 @@ def cambiar_estado_pedido_api(request):
     """
     return actualizar_estado_pedido_api(request.data)
 
+@api_view(['GET'])
 def health_check(request):
     return Response({"status": "ok"}, status=200)
