@@ -83,7 +83,7 @@ DATABASES = {
         "NAME": "inventario_db",
         "USER": "inventario_user",
         "PASSWORD": "inventario_pass",
-        "HOST": "18.116.82.232",
+        "HOST": "3.21.205.242",
         "PORT": "5432",
     }
 }
