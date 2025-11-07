@@ -1,5 +1,5 @@
 # Usar imagen oficial de Python
-FROM python:3.9.2-slim
+FROM python:3.9.2
 
 # Establecer directorio de trabajo
 WORKDIR /app
@@ -8,7 +8,6 @@ WORKDIR /app
 COPY . /app
 
 # Instalar dependencias
-RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # Exponer el puerto de Django

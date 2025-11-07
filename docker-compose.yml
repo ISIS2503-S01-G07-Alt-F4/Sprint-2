@@ -20,10 +20,10 @@ services:
     depends_on:
       - postgres
     environment:
-      - DJANGO_DB_HOST=postgres
-      - DJANGO_DB_NAME=inventario_db
-      - DJANGO_DB_USER=inventario_user
-      - DJANGO_DB_PASSWORD=inventario_pass
+      - DJANGO_DB_HOST=${DJANGO_DB_HOST}
+      - DJANGO_DB_NAME=${DJANGO_DB_NAME}
+      - DJANGO_DB_USER=${DJANGO_DB_USER}
+      - DJANGO_DB_PASSWORD=${DJANGO_DB_PASSWORD}
       - ALERT_EMAIL=${ALERT_EMAIL}
       - EMAIL_HOST_USER=${EMAIL_HOST_USER}
       - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
@@ -31,6 +31,7 @@ services:
       - EMAIL_PORT=${EMAIL_PORT}
       - EMAIL_USE_TLS=${EMAIL_USE_TLS}
       - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL}
+      - KONG_ADMIN_URL=${KONG_ADMIN_URL}
   django2:
     build: .
     command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8081"
@@ -45,10 +46,6 @@ services:
       - DJANGO_DB_NAME=inventario_db
       - DJANGO_DB_USER=inventario_user
       - DJANGO_DB_PASSWORD=inventario_pass
-      - DJANGO_DB_HOST=postgres
-      - DJANGO_DB_NAME=inventario_db
-      - DJANGO_DB_USER=inventario_user
-      - DJANGO_DB_PASSWORD=inventario_pass
       - ALERT_EMAIL=${ALERT_EMAIL}
       - EMAIL_HOST_USER=${EMAIL_HOST_USER}
       - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
@@ -56,6 +53,7 @@ services:
       - EMAIL_PORT=${EMAIL_PORT}
       - EMAIL_USE_TLS=${EMAIL_USE_TLS}
       - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL}
+      - KONG_ADMIN_URL=http://kong:8005
   django3:
     build: .
     command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8082"
@@ -70,6 +68,27 @@ services:
       - DJANGO_DB_NAME=inventario_db
       - DJANGO_DB_USER=inventario_user
       - DJANGO_DB_PASSWORD=inventario_pass
+      - ALERT_EMAIL=${ALERT_EMAIL}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_USE_TLS=${EMAIL_USE_TLS}
+      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL}
+      - KONG_ADMIN_URL=http://kong:8005
+
+  monitor:
+    build: .
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    command: sh -c "sleep 10 && python manage.py monitor_kong --kong-admin http://kong:8005 --upstream provesi_upstream --interval 30 --email $${ALERT_EMAIL:-admin@example.com} --circuit-threshold 2"
+    volumes:
+      - .:/app
+    depends_on:
+      - kong
+      - postgres
+    environment:
       - DJANGO_DB_HOST=postgres
       - DJANGO_DB_NAME=inventario_db
       - DJANGO_DB_USER=inventario_user
@@ -81,6 +100,12 @@ services:
       - EMAIL_PORT=${EMAIL_PORT}
       - EMAIL_USE_TLS=${EMAIL_USE_TLS}
       - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL}
+      - DJANGO_EMAIL_BACKEND=${DJANGO_EMAIL_BACKEND:-django.core.mail.backends.smtp.EmailBackend}
+      - KONG_ADMIN_URL=http://kong:8005
+      - KONG_UPSTREAM=provesi_upstream
+      - KONG_POLL_INTERVAL=30
+      - CIRCUIT_BREAKER_THRESHOLD=2
+    restart: unless-stopped
 
   kong:
     image: kong:3.0
