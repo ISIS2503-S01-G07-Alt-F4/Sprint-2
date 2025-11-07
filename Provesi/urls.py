@@ -17,10 +17,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from . import views
+import Alarmas.views as alarmas_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home),
+    # Health endpoint used by Kong active healthchecks
+    path('health/', alarmas_views.health),
+    path('alarmas/notify/server_down/', alarmas_views.server_down_notify),
+    path('alarmas/notify/circuit_breaker/', alarmas_views.circuit_breaker_notify),
     path('usuarios/', include('Users.urls')),
     path('inventario/', include('Inventario.urls')), 
 ]

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'Users',
     'Inventario',
+    'Alarmas',
     'bootstrap5',
 ]
 
@@ -77,16 +78,33 @@ WSGI_APPLICATION = 'Provesi.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "inventario_db",
-        "USER": "inventario_user",
-        "PASSWORD": "inventario_pass",
-        "HOST": "3.21.205.242",
-        "PORT": "5432",
+# If DATABASE_HOST (or DJANGO_DB_HOST) is set we configure PostgreSQL,
+# otherwise we fall back to a local SQLite database for easy local development.
+
+DB_HOST = os.environ.get("DATABASE_HOST") or os.environ.get("DJANGO_DB_HOST")
+DB_NAME = os.environ.get("DATABASE_NAME") or os.environ.get("DJANGO_DB_NAME") or "inventario_db"
+DB_USER = os.environ.get("DATABASE_USER") or os.environ.get("DJANGO_DB_USER") or "inventario_user"
+DB_PASSWORD = os.environ.get("DATABASE_PASSWORD") or os.environ.get("DJANGO_DB_PASSWORD") or "inventario_pass"
+DB_PORT = os.environ.get("DATABASE_PORT") or os.environ.get("DJANGO_DB_PORT") or "5432"
+
+if DB_HOST:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": DB_NAME,
+            "USER": DB_USER,
+            "PASSWORD": DB_PASSWORD,
+            "HOST": DB_HOST,
+            "PORT": DB_PORT,
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -140,6 +158,16 @@ CACHES = {
         }
     }
 }
+
+# Email configuration: use console backend by default for development.
+# For production, set the environment variables accordingly.
+EMAIL_BACKEND = os.environ.get('DJANGO_EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'localhost')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '25'))
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'False') == 'True'
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@example.com')
 
 # Django REST Framework Configuration
 REST_FRAMEWORK = {
