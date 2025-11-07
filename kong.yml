@@ -1,0 +1,33 @@
+_format_version: "2.1"
+
+services:
+  - name: provesi_service
+    host: provesi_upstream
+    port: 80
+    protocol: http
+    routes:
+      - name: provesi_route
+        paths:
+          - /
+        strip_path: false
+
+upstreams:
+  - name: provesi_upstream
+    targets:
+      - target: django1:8080
+        weight: 100
+      - target: django2:8081
+        weight: 100
+      - target: django3:8082
+        weight: 100
+    healthchecks:
+      threshold: 2
+      active:
+        http_path: /health/
+        timeout: 10
+        healthy:
+          interval: 10
+          successes: 4
+        unhealthy:
+          interval: 5
+          tcp_failures: 1

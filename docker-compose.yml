@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16
@@ -12,13 +10,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  django:
+  django1:
     build: .
-    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8080"
     volumes:
       - .:/app
     ports:
-      - "8000:8000"
+      - "8080:8080"
     depends_on:
       - postgres
     environment:
@@ -26,6 +24,85 @@ services:
       - DJANGO_DB_NAME=inventario_db
       - DJANGO_DB_USER=inventario_user
       - DJANGO_DB_PASSWORD=inventario_pass
+      - ALERT_EMAIL=${ALERT_EMAIL}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_USE_TLS=${EMAIL_USE_TLS}
+      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL}
+  django2:
+    build: .
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8081"
+    volumes:
+      - .:/app
+    ports:
+      - "8001:8081"
+    depends_on:
+      - postgres
+    environment:
+      - DJANGO_DB_HOST=postgres
+      - DJANGO_DB_NAME=inventario_db
+      - DJANGO_DB_USER=inventario_user
+      - DJANGO_DB_PASSWORD=inventario_pass
+      - DJANGO_DB_HOST=postgres
+      - DJANGO_DB_NAME=inventario_db
+      - DJANGO_DB_USER=inventario_user
+      - DJANGO_DB_PASSWORD=inventario_pass
+      - ALERT_EMAIL=${ALERT_EMAIL}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_USE_TLS=${EMAIL_USE_TLS}
+      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL}
+  django3:
+    build: .
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8082"
+    volumes:
+      - .:/app
+    ports:
+      - "8002:8082"
+    depends_on:
+      - postgres
+    environment:
+      - DJANGO_DB_HOST=postgres
+      - DJANGO_DB_NAME=inventario_db
+      - DJANGO_DB_USER=inventario_user
+      - DJANGO_DB_PASSWORD=inventario_pass
+      - DJANGO_DB_HOST=postgres
+      - DJANGO_DB_NAME=inventario_db
+      - DJANGO_DB_USER=inventario_user
+      - DJANGO_DB_PASSWORD=inventario_pass
+      - ALERT_EMAIL=${ALERT_EMAIL}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_USE_TLS=${EMAIL_USE_TLS}
+      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL}
+
+  kong:
+    image: kong:3.0
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: "/kong.yml"
+      KONG_PROXY_ACCESS_LOG: "/dev/stdout"
+      KONG_ADMIN_ACCESS_LOG: "/dev/stdout"
+      KONG_PROXY_ERROR_LOG: "/dev/stderr"
+      KONG_ADMIN_ERROR_LOG: "/dev/stderr"
+      KONG_ADMIN_LISTEN: "0.0.0.0:8005"
+      KONG_PROXY_LISTEN: "0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+      - "8005:8005"
+      - "8443:8443"
+    volumes:
+      - ./kong.yml:/kong.yml
+    depends_on:
+      - django1
+      - django2
+      - django3
 
 volumes:
   postgres_data:

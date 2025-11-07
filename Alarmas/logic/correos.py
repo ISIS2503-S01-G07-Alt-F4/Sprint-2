@@ -5,7 +5,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def _send(subject: str, body: str, to: list, html: str | None = None):
+def _send(subject: str, body: str, to: list, html: str = None):
     """Send an email using Django's email backend.
 
     - subject: subject text
@@ -13,6 +13,7 @@ def _send(subject: str, body: str, to: list, html: str | None = None):
     - to: list of recipient emails
     - html: optional HTML body
     """
+    print("Queso enviar correo")
     try:
         from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@example.com')
         if html:
@@ -28,7 +29,8 @@ def _send(subject: str, body: str, to: list, html: str | None = None):
         return False
 
 
-def notify_server_down(to_email: str, server_name: str, details: str | None = None):
+def notify_server_down(to_email: str, server_name: str, details: str= None):
+    print("Queso servidor caído")
     """Notify a single recipient that a monitored server is down."""
     subject = f"[ALERTA] Servidor caído: {server_name}"
     body = f"El servidor '{server_name}' ha sido reportado como caído.\n"
@@ -38,8 +40,9 @@ def notify_server_down(to_email: str, server_name: str, details: str | None = No
     return _send(subject, body, [to_email])
 
 
-def notify_circuit_breaker_activated(to_email: str, circuit_name: str, details: str | None = None):
+def notify_circuit_breaker_activated(to_email: str, circuit_name: str, details: str = None):
     """Notify that a circuit-breaker was activated."""
+    print("Queso notificador")
     subject = f"[ALERTA] Circuit-breaker activado: {circuit_name}"
     body = f"Se ha activado el circuit-breaker '{circuit_name}'.\n"
     if details:
