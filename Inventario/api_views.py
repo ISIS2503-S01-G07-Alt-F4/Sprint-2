@@ -46,7 +46,6 @@ def crear_producto_api(request):
 def crear_pedido_api(request):
     """
     Endpoint para crear un nuevo pedido
-    
     Parámetros requeridos en el body JSON:
     - username: Usuario para autenticación
     - password: Contraseña para autenticación
@@ -57,7 +56,6 @@ def crear_pedido_api(request):
     - productos_solicitados: una lista en formato json donde cada elemento tiene el id del producto
       junto con la cantidad pedida de dicho producto. Sobra decir que tiene que ser la misma cantidad
       de productos_solicitados que de items.
-    
     Ejemplo de request:
     {
         "username": "operario1",
