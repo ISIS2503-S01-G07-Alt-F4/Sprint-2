@@ -87,6 +87,8 @@ class Pedido(models.Model):
     cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE, related_name='pedidos', null=True, blank=True)
     operario = models.ForeignKey('Users.Operario', on_delete=models.DO_NOTHING, null=True, blank=True)
 
+    
+
 
 class ProductoSolicitado(models.Model):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="productos_solicitados")

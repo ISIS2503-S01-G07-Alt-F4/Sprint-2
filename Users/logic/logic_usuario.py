@@ -188,7 +188,10 @@ def crear_usuario_management_api(username, password):
     data = {
         "connection": "Username-Password-Authentication",
         "username": username,
-        "password": password
+        "password": password,
+        "user_metadata": {
+            "username_original": username 
+        }
     }
     response = requests.post(url, headers=headers, json=data)
     print("STATUS crear:", response.status_code)
@@ -270,9 +273,11 @@ def token_requerido(f):
             return JsonResponse({'error': resultado['error']}, status=401)
         
         username = resultado.get('nickname')
+        username_original = resultado.get('user_metadata', {}).get('username_original')
      
         try:
-            usuario = Usuario.objects.get(login=username)
+
+            usuario = Usuario.objects.get(login=username_original)
             request.user = usuario
         except Usuario.DoesNotExist:
             return JsonResponse({'error': 'Usuario no encontrado en sistema'}, status=404)
