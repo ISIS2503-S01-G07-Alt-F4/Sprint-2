@@ -6,12 +6,14 @@ import time
 from django.contrib.auth import authenticate
 from django.core.cache import cache
 from django.contrib.auth import get_user_model
+from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.response import Response
 
 from Inventario.models import Producto, Estanteria
 from Inventario.serializers import ProductoCreateSerializer, ProductoSerializer
 from Inventario.logic.logic_bodega import get_bodegas_operario
+from Users.models import Usuario
 
 
 def autenticar_usuario_api(username, password):
@@ -156,9 +158,15 @@ def procesar_creacion_producto_completa(request_data):
         username = request_data.get('username')
         password = request_data.get('password')
         
-        user, error_response = autenticar_usuario_api(username, password)
-        if error_response:
-            return error_response
+        # user, error_response = autenticar_usuario_api(username, password)
+        # if error_response:
+        #     return error_response
+        try:
+            user = Usuario.objects.get(login=username)
+            
+        except Usuario.DoesNotExist:
+            return JsonResponse({'error': 'Usuario no encontrado en sistema'}, status=404)
+        
         tiempo_autenticacion = time.time() - tiempo_inicio
         
         # 2. Verificar permisos
