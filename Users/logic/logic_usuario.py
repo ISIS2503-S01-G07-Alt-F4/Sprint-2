@@ -273,7 +273,7 @@ def token_requerido(f):
      
         try:
             usuario = Usuario.objects.get(login=username)
-            request.usuario = usuario
+            request.user = usuario
         except Usuario.DoesNotExist:
             return JsonResponse({'error': 'Usuario no encontrado en sistema'}, status=404)
         
