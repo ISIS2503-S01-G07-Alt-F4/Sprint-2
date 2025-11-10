@@ -6,6 +6,7 @@ from Inventario.forms import ProductoForm
 from Inventario.logic.logic_inventario import get_bodegas
 from Inventario.logic.logic_bodega import get_bodega_usuario, get_bodegas_operario
 from Inventario.logic.logic_producto import registrar_producto, obtener_productos
+from Users.logic.logic_usuario import token_requerido
 
 def inventario_view(request):
     if request.user.is_authenticated:
@@ -31,15 +32,20 @@ def bodega_list(request):
         'rol': rol
     })
 
+@token_requerido
 def crear_producto(request):
-    if request.user.is_authenticated:
-        rol = request.user.rol
-        # Obtener bodega seleccionada de la sesión para operarios
-        bodega_seleccionada_id = request.session.get('bodega_seleccionada')
-        bodega_usuario = get_bodega_usuario(request.user, bodega_seleccionada_id)
-    else:
-        rol = None
-        bodega_usuario = None
+    # if request.user.is_authenticated:
+    #     rol = request.user.rol
+    #     # Obtener bodega seleccionada de la sesión para operarios
+    #     bodega_seleccionada_id = request.session.get('bodega_seleccionada')
+    #     bodega_usuario = get_bodega_usuario(request.user, bodega_seleccionada_id)
+    # else:
+    #     rol = None
+    #     bodega_usuario = None
+    rol = request.user.rol
+    #     # Obtener bodega seleccionada de la sesión para operarios
+    bodega_seleccionada_id = request.session.get('bodega_seleccionada')
+    bodega_usuario = get_bodega_usuario(request.user, bodega_seleccionada_id)
         
     # Verificar que el usuario tenga una bodega asignada
     if not bodega_usuario and request.user.is_authenticated:
