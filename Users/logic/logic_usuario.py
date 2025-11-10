@@ -1,3 +1,6 @@
+from django.http import JsonResponse
+
+import Users
 from ..models import Usuario, JefeBodega, Operario, Vendedor
 from django.contrib.auth import authenticate, login, logout 
 from django.contrib import messages
@@ -14,6 +17,7 @@ def create_usuario(data):
     }
     modelo = modelos.get(data['rol'])
     
+    
     try:
         datos_usuario = {
             'login': data['login'],
@@ -22,6 +26,7 @@ def create_usuario(data):
             'apellido': data['apellido'],
             'rol': data['rol']
         }
+        crear_usuario_management_api(data['login'],data['password'])
         
         if data['rol'] == 'JefeBodega':
             # JefeBodega: tomar la primera bodega de la lista
@@ -51,16 +56,139 @@ def create_usuario(data):
         return None
 
 
+# def login_usuario(request, form):
+#     login_info = form.cleaned_data['login']
+#     password = form.cleaned_data['password']
+#     usuario = authenticate(request, login=login_info, password=password) # Verificar si el usuario existe
+    
+#     if usuario is not None:
+#         login(request, usuario) # Iniciar sesión del usuario y persistirlo en la sesión
+#         return usuario
+#     else:
+#         return None
+# def login_usuario(request, form):
+#     username = form.cleaned_data['login']
+#     password = form.cleaned_data['password']
+    
+#     url = f"https://dev-2huk2uien4i6jdxa.us.auth0.com/oauth/token"
+#     data = {
+#         "grant_type": "password",
+#         "username": username,
+#         "password": password,
+#         "audience": "http://localhost:8000/api", 
+#         "client_id": "rjAfrQ1Hy4hsvLn8GeUC4ZDtRyRtjsT6",
+#         "client_secret": "_tr4RXV3PDlTMewwqd9nydsdznSbVsd0R8XFv33OgE57EWpJPqvsBrDYOHQZ7kHr",
+#         "scope": "openid profile email"
+#     }
+
+#     response = requests.post(url, json=data)
+   
+#     if response.status_code == 200:
+#         tokens = response.json()  
+#         request.session['access_token'] = tokens['access_token']
+#         request.session['id_token'] = tokens.get('id_token')
+#         login(request, username)
+#         return JsonResponse({"mensaje": "Login exitoso", "tokens": tokens})
+#     else:
+#         return JsonResponse({"error": "Credenciales inválidas", "detalles": response.text}, status=401)
+    
+import logging
+logger = logging.getLogger(__name__)
+
 def login_usuario(request, form):
-    login_info = form.cleaned_data['login']
+    username = form.cleaned_data['login']
     password = form.cleaned_data['password']
-    usuario = authenticate(request, login=login_info, password=password) # Verificar si el usuario existe
-    if usuario is not None:
-        login(request, usuario) # Iniciar sesión del usuario y persistirlo en la sesión
-        return usuario
+    
+    url = "https://dev-2huk2uien4i6jdxa.us.auth0.com/oauth/token"
+    data = {
+        "grant_type": "password",
+        "username": username,
+        "password": password,
+        "audience": "http://localhost:8000/api", 
+        "client_id": "rjAfrQ1Hy4hsvLn8GeUC4ZDtRyRtjsT6",
+        "client_secret": "_tr4RXV3PDlTMewwqd9nydsdznSbVsd0R8XFv33OgE57EWpJPqvsBrDYOHQZ7kHr",
+        "scope": "openid profile email"
+    }
+    logger.info("Antes del post")
+    print("ANTES DEL POST")
+    response = requests.post(url, json=data)
+   
+    if response.status_code == 200:
+        
+        tokens = response.json()
+        logger.info("LLego acá")
+        print("LLEGO ACÁ")
+        # Guardar tokens en sesión
+        request.session['access_token'] = tokens['access_token']
+        request.session['id_token'] = tokens.get('id_token')
+
+        #  Verificar si el usuario ya existe en Django, si no, crearlo (sin contraseña local)
+        #user, created = Users.objects.get_or_create(username=username)
+
+        #  Iniciar sesión en Django (esto crea la sesión)
+        #login(request, user)
+
+        return JsonResponse({
+            "mensaje": "Login exitoso",
+            "tokens": tokens,
+            "nuevo_usuario": True
+        })
     else:
-        return None
+        return JsonResponse({
+            "error": "Credenciales inválidas",
+            "detalles": response.text
+        }, status=401)
     
 def cerrar_sesion(request):
     logout(request)
     
+
+import requests
+
+def obtener_token_management_api():
+    url = "https://dev-2huk2uien4i6jdxa.us.auth0.com/oauth/token"
+    payload = {
+        "client_id": "rjAfrQ1Hy4hsvLn8GeUC4ZDtRyRtjsT6",
+        "client_secret": "_tr4RXV3PDlTMewwqd9nydsdznSbVsd0R8XFv33OgE57EWpJPqvsBrDYOHQZ7kHr",
+        "audience": "https://dev-2huk2uien4i6jdxa.us.auth0.com/api/v2/",
+        "grant_type": "client_credentials"
+    }
+    headers = {"content-type": "application/json"}
+
+    response = requests.post(url, json=payload, headers=headers)
+    response.raise_for_status()
+    return response.json()["access_token"]
+
+
+def crear_usuario_management_api(username, password):
+    url = "https://dev-2huk2uien4i6jdxa.us.auth0.com/api/v2/users"
+    ACCESS_TOKEN = obtener_token_management_api()
+    headers = {
+        "Authorization": f"Bearer {ACCESS_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "connection": "Username-Password-Authentication",
+        "username": username,
+        "password": password
+    }
+    response = requests.post(url, headers=headers, json=data)
+    return response.json()
+
+def obtener_token_usuario(username, password):
+    url = f"https://dev-2huk2uien4i6jdxa.us.auth0.com/oauth/token"
+    data = {
+        "grant_type": "password",
+        "username": username,
+        "password": password,
+        "audience": "http://localhost:8000/api", 
+        "client_id": "rjAfrQ1Hy4hsvLn8GeUC4ZDtRyRtjsT6",
+        "client_secret": "_tr4RXV3PDlTMewwqd9nydsdznSbVsd0R8XFv33OgE57EWpJPqvsBrDYOHQZ7kHr",
+        "scope": "openid profile email"
+    }
+    response = requests.post(url, json=data)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print("Error obteniendo token:", response.text)
+        return None

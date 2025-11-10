@@ -9,15 +9,24 @@ from Users.models import Usuario, JefeBodega, Operario
 from Users.logic.logic_usuario import create_usuario
 # Create your views here.
 
+import logging
+logger = logging.getLogger(__name__)
+
 def usuario_login(request):
+    print("ESTO")
     if request.method == 'POST':
         form = UsuarioLoginForm(request.POST)
-        print(form)
+        #print(form)
+        print(form.is_valid())
         if form.is_valid():
+            print("ESTO1")
+            logger.info("Va a comenzar el login")
             usuario = login_usuario(request, form)
             if usuario is not None:
+                print("NOT NONE")
                 messages.add_message(request, messages.SUCCESS, "Inicio de sesión exitoso")
             else:
+                print("NONE")
                 messages.add_message(request, messages.ERROR, "Credenciales inválidas")
         else:
             print(form.errors)
