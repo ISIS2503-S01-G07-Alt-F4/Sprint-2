@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+import requests
 
 import Users
 from ..models import Usuario, JefeBodega, Operario, Vendedor
@@ -26,7 +27,7 @@ def create_usuario(data):
             'apellido': data['apellido'],
             'rol': data['rol']
         }
-        crear_usuario_management_api(data['login'],data['password'])
+        
         
         if data['rol'] == 'JefeBodega':
             # JefeBodega: tomar la primera bodega de la lista
@@ -47,7 +48,7 @@ def create_usuario(data):
                 usuario.bodega.set(bodegas_seleccionadas) 
         else:
             usuario = modelo.objects.create_user(**datos_usuario)
-            
+        crear_usuario_management_api(data['login'],data['contraseña'])
         print("Usuario creado correctamente")
         return usuario
         
@@ -107,12 +108,16 @@ def login_usuario(request, form):
         "audience": "http://localhost:8000/api", 
         "client_id": "rjAfrQ1Hy4hsvLn8GeUC4ZDtRyRtjsT6",
         "client_secret": "_tr4RXV3PDlTMewwqd9nydsdznSbVsd0R8XFv33OgE57EWpJPqvsBrDYOHQZ7kHr",
-        "scope": "openid profile email"
+        "scope": "openid profile email",
+        "realm": "Username-Password-Authentication"
+        
     }
     logger.info("Antes del post")
     print("ANTES DEL POST")
     response = requests.post(url, json=data)
-   
+    print("STATUS:", response.status_code)
+    print("RESPONSE TEXT:", response.text)
+    print("DESPUES DEL POST")
     if response.status_code == 200:
         
         tokens = response.json()
@@ -123,10 +128,10 @@ def login_usuario(request, form):
         request.session['id_token'] = tokens.get('id_token')
 
         #  Verificar si el usuario ya existe en Django, si no, crearlo (sin contraseña local)
-        #user, created = Users.objects.get_or_create(username=username)
+        user = get_or_create_usuario(username=username)
 
         #  Iniciar sesión en Django (esto crea la sesión)
-        #login(request, user)
+        login(request, user)
 
         return JsonResponse({
             "mensaje": "Login exitoso",
@@ -134,6 +139,7 @@ def login_usuario(request, form):
             "nuevo_usuario": True
         })
     else:
+        print("SALIÓ MAL EL REQUEST")
         return JsonResponse({
             "error": "Credenciales inválidas",
             "detalles": response.text
@@ -142,8 +148,18 @@ def login_usuario(request, form):
 def cerrar_sesion(request):
     logout(request)
     
+def get_or_create_usuario(username):
+    try:
+        usuario = Usuario.objects.get(login=username)
+        
+        print(f"Usuario encontrado: {usuario}")
+        return usuario
+    except Usuario.DoesNotExist:
+        print(f"Usuario {username} no existe")
+        usuario = None
+        return None
 
-import requests
+    import requests
 
 def obtener_token_management_api():
     url = "https://dev-2huk2uien4i6jdxa.us.auth0.com/oauth/token"
@@ -173,6 +189,8 @@ def crear_usuario_management_api(username, password):
         "password": password
     }
     response = requests.post(url, headers=headers, json=data)
+    print("STATUS crear:", response.status_code)
+    print("RESPONSE TEXT crear:", response.text)
     return response.json()
 
 def obtener_token_usuario(username, password):
