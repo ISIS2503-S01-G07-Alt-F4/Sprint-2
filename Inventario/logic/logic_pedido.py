@@ -6,6 +6,8 @@ from Inventario.serializers import PedidoCreateSerializer, PedidoSerializer
 from rest_framework import status
 from rest_framework.response import Response
 
+from Users.logic.logic_usuario import token_requerido
+
 
 def obtener_pedido(id : int):
     try:
@@ -31,6 +33,7 @@ def verificar_permisos_pedido(usuario):
         return False, "No tienes permisos para crear pedidos"
     
     return True, "OK"
+
 
 def procesar_creacion_pedido_completa(request_data):
     """
@@ -236,6 +239,7 @@ def actualizar_estado_pedido(pedido_id, nuevo_estado):
     except Exception as e:
         return None, f"Error actualizando pedido: {str(e)}"
     
+
 def actualizar_estado_pedido_api(request_data):
     """
     Endpoint para actualizar estado desde API
@@ -245,9 +249,9 @@ def actualizar_estado_pedido_api(request_data):
         username = request_data.get('username')
         password = request_data.get('password')
         
-        user, error_response = autenticar_usuario_api(username, password)
-        if error_response:
-            return error_response
+        # user, error_response = autenticar_usuario_api(username, password)
+        # if error_response:
+        #     return error_response
         
         
         
@@ -346,3 +350,24 @@ def permiso_actualizar_pedido_empacado_x_despachar(usuario):
     """
     roles_permitidos = [ 'Vendedor']
     return usuario.rol in roles_permitidos
+
+def verificar_integridad_pedido(request_data):
+    """
+    Verifica la integrudad de un pedido
+    """
+    pedido_id = request_data.get('pedido_id')
+    if not pedido_id :
+            return Response({
+                'error': 'pedido_id es requerido',
+                'codigo': 'MISSING_FIELDS'
+            }, status=status.HTTP_400_BAD_REQUEST)
+    pedido = Pedido.objects.get(id=pedido_id)
+    if pedido:
+        print("entro a donde era")
+        return pedido.verificar_integridad()
+    else:
+        print("entro al else")
+        return False
+    
+    
+

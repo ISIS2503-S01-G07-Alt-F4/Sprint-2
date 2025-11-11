@@ -111,6 +111,9 @@ class PedidoCreateSerializer(serializers.ModelSerializer):
         
         for producto_data in productos_solicitados_data:
             ProductoSolicitado.objects.create(pedido=pedido, **producto_data)
+
+        pedido.hash_de_integridad = pedido.generar_hash()
+        pedido.save(update_fields=['hash_de_integridad'])
         
         return pedido
     

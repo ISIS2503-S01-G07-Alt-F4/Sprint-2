@@ -1,4 +1,10 @@
+import hashlib
+import hmac
+import json
+import os
 from django.db import models
+
+from Provesi import settings
 
 # Create your models here.
 
@@ -86,8 +92,40 @@ class Pedido(models.Model):
     factura = models.OneToOneField(Factura,on_delete=models.CASCADE,related_name="pedido",null=True,blank=True)
     cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE, related_name='pedidos', null=True, blank=True)
     operario = models.ForeignKey('Users.Operario', on_delete=models.DO_NOTHING, null=True, blank=True)
+    hash_de_integridad = models.CharField(max_length=64, editable=False, null=True, blank=True)
 
-    
+    def _datos_para_hash(self):
+        datos = {
+            "id": self.id,
+            "estado": self.estado,
+            "cliente": self.cliente_id,
+            "factura": self.factura_id,
+            "items": list(self.items.values_list('id', flat=True)),
+        }
+        return json.dumps(datos, sort_keys=True).encode()
+
+    def generar_hash(self):
+        INTEGRITY_KEY = os.getenv("INTEGRITY_KEY")
+        if not INTEGRITY_KEY:
+            raise Exception("Falta INTEGRITY_KEY en las variables de entorno")
+        print("___datos___")
+        print(self._datos_para_hash())
+        print("___________")
+        return hmac.new(INTEGRITY_KEY.encode(), self._datos_para_hash(), hashlib.sha256).hexdigest()
+
+    def save(self, *args, **kwargs):
+        creando = self._state.adding
+        super().save(*args, **kwargs)
+        if creando and not self.hash_de_integridad:
+            self.hash_de_integridad = self.generar_hash()
+            super().save(update_fields=['hash_de_integridad'])
+
+
+    def verificar_integridad(self):
+        print("codigo 1 "+self.hash_de_integridad)
+        print("codigo 2 "+self.generar_hash())
+        return hmac.compare_digest(self.hash_de_integridad, self.generar_hash())
+
 
 
 class ProductoSolicitado(models.Model):

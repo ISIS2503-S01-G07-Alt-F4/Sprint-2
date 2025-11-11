@@ -43,6 +43,8 @@ def autenticar_usuario_api(username, password):
             cache.delete(cache_key)
     
     # Usuario no está en cache, se autentica normal
+    print(username)
+    print(password)
     user = authenticate(username=username, password=password)
     if not user:
         return None, Response({'error': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)

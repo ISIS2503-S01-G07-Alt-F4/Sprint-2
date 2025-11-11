@@ -1,4 +1,4 @@
-from Inventario.logic.logic_pedido import actualizar_estado_pedido_api, procesar_creacion_pedido_completa
+from Inventario.logic.logic_pedido import actualizar_estado_pedido_api, procesar_creacion_pedido_completa, verificar_integridad_pedido
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -123,3 +123,7 @@ def cambiar_estado_pedido_api(request):
 @api_view(['GET'])
 def health_check(request):
     return Response({"status": "ok"}, status=200)
+
+@api_view(['GET'])
+def verificar_integridad(request):
+    return Response(verificar_integridad_pedido(request.data))

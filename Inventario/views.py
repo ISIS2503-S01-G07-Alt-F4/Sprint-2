@@ -8,6 +8,7 @@ from Inventario.logic.logic_bodega import get_bodega_usuario, get_bodegas_operar
 from Inventario.logic.logic_producto import registrar_producto, obtener_productos
 from Users.logic.logic_usuario import token_requerido
 
+
 def inventario_view(request):
     if request.user.is_authenticated:
         rol = request.user.rol
@@ -19,6 +20,7 @@ def inventario_view(request):
             'rol':rol,
             'productos': productos
     })
+
 
 def bodega_list(request):
     if request.user.is_authenticated:
@@ -77,6 +79,7 @@ def crear_producto(request):
         'rol': rol
     }
     return render(request, 'Producto/crearProducto.html', context)
+
 
 def seleccionar_bodega(request, bodega_id):
     """
