@@ -121,7 +121,7 @@ def cambiar_estado_pedido_api(request):
 
     }
     """
-    return actualizar_estado_pedido_api(request.data)
+    return actualizar_estado_pedido_api(request)
 
 @api_view(['GET'])
 def health_check(request):

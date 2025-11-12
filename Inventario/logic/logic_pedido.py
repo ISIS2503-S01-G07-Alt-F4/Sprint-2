@@ -242,19 +242,20 @@ def actualizar_estado_pedido(pedido_id, nuevo_estado):
         return None, f"Error actualizando pedido: {str(e)}"
     
 
-def actualizar_estado_pedido_api(request_data):
+def actualizar_estado_pedido_api(request):
     """
     Endpoint para actualizar estado desde API
     """
     try:
         # Autenticación
-        username = request_data.get('username')
-        password = request_data.get('password')
+        # username = request_data.get('username')
+        # password = request_data.get('password')
         
         # user, error_response = autenticar_usuario_api(username, password)
         # if error_response:
         #     return error_response
-        
+        request_data = request.data
+        user = request.user
         
         
         # Obtener datos
