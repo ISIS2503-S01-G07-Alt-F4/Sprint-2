@@ -378,7 +378,7 @@ def consultar_pedido_por_id(request, id_pedido):
         if user.rol not in ['JefeBodega']:
             return Response({
                     'mensaje': 'No tienes los permisos suficientes para consultar pedidos.',
-                    'codigo': 'VULNERADO'
+                    'codigo': 'PERMISOS_VULNERADOS'
                 }, status=status.HTTP_409_CONFLICT)
         pedido = Pedido.objects.get(id=id_pedido)
 
