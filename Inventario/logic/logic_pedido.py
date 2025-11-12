@@ -26,8 +26,8 @@ def verificar_permisos_pedido(usuario):
     """
     Verifica si el usuario tiene permisos para crear pedidos
     """
-    if not usuario.is_authenticated:
-        return False, "Usuario no autenticado"
+    # if not usuario.is_authenticated:
+    #     return False, "Usuario no autenticado"
     
     if usuario.rol not in ['JefeBodega']:
         return False, "No tienes permisos para crear pedidos"
@@ -35,19 +35,21 @@ def verificar_permisos_pedido(usuario):
     return True, "OK"
 
 
-def procesar_creacion_pedido_completa(request_data):
+def procesar_creacion_pedido_completa(request):
     """
     Procesa la creación completa de un pedido desde la API
     Coherente con el sistema de autenticación usado en las vistas web
     """
     try:
         # 1. Autenticar usuario usando username/password en el body (como en las vistas web)
-        username = request_data.get('username')
-        password = request_data.get('password')
+        # username = request_data.get('username')
+        # password = request_data.get('password')
         
-        user, error_response = autenticar_usuario_api(username, password)
-        if error_response:
-            return error_response
+        # user, error_response = autenticar_usuario_api(username, password)
+        # if error_response:
+        #     return error_response
+        request_data = request.data
+        user = request.user
         
         # 2. Verificar permisos
         tiene_permisos, mensaje = verificar_permisos_pedido(user)
@@ -369,5 +371,41 @@ def verificar_integridad_pedido(request_data):
         print("entro al else")
         return False
     
+def consultar_pedido_por_id(request, id_pedido):
+    try:
+        user = request.user
+        if user.rol not in ['JefeBodega']:
+            return Response({
+                    'mensaje': 'No tienes los permisos suficientes para consultar pedidos.',
+                    'codigo': 'VULNERADO'
+                }, status=status.HTTP_409_CONFLICT)
+        pedido = Pedido.objects.get(id=id_pedido)
+
+        if pedido:
+            verificado = pedido.verificar_integridad()
+            if verificado:
+                serializer = PedidoSerializer(pedido)
+                return Response({
+                    'mensaje': 'Estado actualizado exitosamente',
+                    'pedido': serializer.data,
+                    'codigo': 'SUCCESS'
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    'mensaje': 'El pedido ha sido modificado o vulnerado.',
+                    'codigo': 'VULNERADO'
+                }, status=status.HTTP_409_CONFLICT)
+        else:
+            return Response({
+                'mensaje': f'No se encontró el pedido con id {id_pedido}.',
+                'codigo': 'NOT_FOUND'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+    except Exception as e:
+        return Response({
+            'error': f'Error interno del servidor: {str(e)}',
+            'codigo': 'INTERNAL_ERROR'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     
 

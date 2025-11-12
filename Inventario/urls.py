@@ -13,5 +13,6 @@ urlpatterns = [
     path('api/health-check/', api_views.health_check, name='api_health_check'),
     path('pedidos/crear', api_views.crear_pedido_api, name='api_crear_pedido'),
     path('pedidos/cambiar_estado', api_views.cambiar_estado_pedido_api, name='api_cambiar_estado_pedido'),
-    path('pedidos/verificar_integridad', api_views.verificar_integridad, name='api_verificar_integridad')
+    path('pedidos/verificar_integridad', api_views.verificar_integridad, name='api_verificar_integridad'),
+    path('pedidos/consultar/<int:id>/', api_views.consultar_pedido, name='api_consultar_pedido')
 ]

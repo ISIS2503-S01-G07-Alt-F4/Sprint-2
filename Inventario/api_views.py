@@ -1,8 +1,10 @@
-from Inventario.logic.logic_pedido import actualizar_estado_pedido_api, procesar_creacion_pedido_completa, verificar_integridad_pedido
+from Inventario.logic.logic_pedido import actualizar_estado_pedido_api, consultar_pedido_por_id, procesar_creacion_pedido_completa, verificar_integridad_pedido
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
+
+from Users.logic.logic_usuario import token_requerido
 
 from .logic.logic_api import procesar_creacion_producto_completa
 
@@ -43,6 +45,7 @@ def crear_producto_api(request):
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny]) 
+@token_requerido
 def crear_pedido_api(request):
     """
     Endpoint para crear un nuevo pedido
@@ -84,7 +87,7 @@ def crear_pedido_api(request):
 
     }
     """
-    return procesar_creacion_pedido_completa(request.data)
+    return procesar_creacion_pedido_completa(request)
 
 
 @csrf_exempt
@@ -127,3 +130,10 @@ def health_check(request):
 @api_view(['GET'])
 def verificar_integridad(request):
     return Response(verificar_integridad_pedido(request.data))
+
+
+@api_view(['GET'])
+@token_requerido
+def consultar_pedido(request, id):
+
+    return consultar_pedido_por_id(request, id)

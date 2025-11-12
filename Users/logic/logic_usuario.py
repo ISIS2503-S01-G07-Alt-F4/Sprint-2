@@ -234,11 +234,19 @@ def verificar_token_auth0(token):
 
         signing_key = jwks_client.get_signing_key_from_jwt(token)
    
+        # payload = jwt.decode(
+        #     token,
+        #     signing_key.key,
+        #     algorithms=['RS256'],
+        #     audience="rjAfrQ1Hy4hsvLn8GeUC4ZDtRyRtjsT6", 
+        #     issuer=f'https://{AUTH0_DOMAIN}/'
+        # )
+        
         payload = jwt.decode(
             token,
             signing_key.key,
             algorithms=['RS256'],
-            audience="rjAfrQ1Hy4hsvLn8GeUC4ZDtRyRtjsT6", 
+            audience=["http://localhost:8000/api","rjAfrQ1Hy4hsvLn8GeUC4ZDtRyRtjsT6"],
             issuer=f'https://{AUTH0_DOMAIN}/'
         )
         
@@ -265,16 +273,16 @@ def token_requerido(f):
                 token = auth_header.split(' ')[1]
             else:
                 return JsonResponse({'error': 'Token requerido'}, status=401)
-        
+        print(token)
         print("ACÁ Se EsTa QUEDANDO")
         resultado = verificar_token_auth0(token)
         
         if 'error' in resultado:
             return JsonResponse({'error': resultado['error']}, status=401)
-        
+        print(resultado)
         username = resultado.get('nickname')
         username_original = resultado.get('user_metadata', {}).get('username_original')
-     
+        print(username_original)
         try:
 
             usuario = Usuario.objects.get(login=username_original)

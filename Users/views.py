@@ -38,6 +38,33 @@ def usuario_login(request):
     }
     return render(request, 'Usuario/usuarioLogin.html', context)
 
+def usuario_login_postman(request):
+    print("ESTO")
+    if request.method == 'POST':
+        form = UsuarioLoginForm(request.POST)
+        #print(form)
+        print(form.is_valid())
+        if form.is_valid():
+            print("ESTO1")
+            logger.info("Va a comenzar el login")
+            usuario = login_usuario(request, form)
+            if usuario is not None:
+                print("NOT NONE")
+                messages.add_message(request, messages.SUCCESS, "Inicio de sesión exitoso")
+                return usuario
+            else:
+                print("NONE")
+                messages.add_message(request, messages.ERROR, "Credenciales inválidas")
+        else:
+            print(form.errors)
+    else:
+        form = UsuarioLoginForm()
+    
+    context = {
+        'form': form
+    }
+    return render(request, 'Usuario/usuarioLogin.html', context)
+
 def usuario_logout(request):
     cerrar_sesion(request)
     return HttpResponseRedirect(reverse('usuarioLogin'))
