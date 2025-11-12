@@ -8,26 +8,27 @@ from Inventario.logic.logic_bodega import get_bodega_usuario, get_bodegas_operar
 from Inventario.logic.logic_producto import registrar_producto, obtener_productos
 from Users.logic.logic_usuario import token_requerido
 
-
+@token_requerido
 def inventario_view(request):
-    if request.user.is_authenticated:
-        rol = request.user.rol
-    else:
-        rol = None
-    print(request.user)
+    # if request.user.is_authenticated:
+    #     rol = request.user.rol
+    # else:
+    #     rol = None
+    rol = request.user.rol
     productos = obtener_productos()
     return render(request, 'Inventario/inventario.html',{
             'rol':rol,
             'productos': productos
     })
 
-
+@token_requerido
 def bodega_list(request):
-    if request.user.is_authenticated:
-        rol = request.user.rol
-    else:
-        rol = None
-    print(request.user)
+    # if request.user.is_authenticated:
+    #     rol = request.user.rol
+    # else:
+    #     rol = None
+    # print(request.user)
+    rol = request.user.rol
     bodegas = get_bodegas()
     return render(request, 'Bodega/bodega.html', {
         'bodegas': bodegas, 
