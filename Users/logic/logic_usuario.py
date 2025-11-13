@@ -208,7 +208,7 @@ def verificar_token_auth0(token):
     try:
         
         
-        jwks_url = f'https://{os.getenv('AUTHZ_DOMAIN')}/.well-known/jwks.json'
+        jwks_url = f"https://{os.getenv('AUTHZ_DOMAIN')}/.well-known/jwks.json"
         jwks_client = jwt.PyJWKClient(jwks_url)
         
 
@@ -221,7 +221,7 @@ def verificar_token_auth0(token):
             signing_key.key,
             algorithms=['RS256'],
             audience=[os.getenv('AUTHZ_AUDIENCE'),os.getenv('CLIENT_ID')],
-            issuer=f'https://{os.getenv('AUTHZ_DOMAIN')}/'
+            issuer=f"https://{os.getenv('AUTHZ_DOMAIN')}/"
         )
         
         return payload

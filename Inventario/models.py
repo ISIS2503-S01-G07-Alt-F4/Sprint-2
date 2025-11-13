@@ -113,10 +113,15 @@ class Pedido(models.Model):
         print("___________")
         return hmac.new(INTEGRITY_KEY.encode(), self._datos_para_hash(), hashlib.sha256).hexdigest()
 
+    
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.hash_de_integridad = self.generar_hash()
-        super().save(update_fields=['hash_de_integridad'])
+
+        # Solo recalcula el hash si no fue desactivado
+        recalcular_hash = os.getenv("RECALCULAR_HASH")
+        if recalcular_hash!=None:
+            self.hash_de_integridad = self.generar_hash()
+            super().save(update_fields=['hash_de_integridad'])
         
 
     def verificar_integridad(self):
