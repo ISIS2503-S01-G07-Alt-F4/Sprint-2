@@ -1,4 +1,5 @@
 from functools import wraps
+import os
 from django.http import JsonResponse
 import jwt
 import requests
@@ -102,14 +103,15 @@ def login_usuario(request, form):
     username = form.cleaned_data['login']
     password = form.cleaned_data['password']
     
-    url = "https://dev-2huk2uien4i6jdxa.us.auth0.com/oauth/token"
+    url = f"https://{os.getenv('AUTHZ_DOMAIN')}/oauth/token"
+    #print(os.getenv('AUTHZ_AUDIENCE'))
     data = {
         "grant_type": "password",
         "username": username,
         "password": password,
-        "audience": "http://localhost:8000/api", 
-        "client_id": "rjAfrQ1Hy4hsvLn8GeUC4ZDtRyRtjsT6",
-        "client_secret": "_tr4RXV3PDlTMewwqd9nydsdznSbVsd0R8XFv33OgE57EWpJPqvsBrDYOHQZ7kHr",
+        "audience": f"{os.getenv('AUTHZ_AUDIENCE')}", 
+        "client_id": f"{os.getenv('CLIENT_ID')}",
+        "client_secret": f"{os.getenv('CLIENT_SECRET')}",
         "scope": "openid profile email",
         "realm": "Username-Password-Authentication"
         
@@ -125,19 +127,17 @@ def login_usuario(request, form):
         tokens = response.json()
         logger.info("LLego acá")
         print("LLEGO ACÁ")
-        # Guardar tokens en sesión
         request.session['access_token'] = tokens['access_token']
+        
         request.session['id_token'] = tokens.get('id_token')
-
-        #  Verificar si el usuario ya existe en Django, si no, crearlo (sin contraseña local)
+       
         user = get_or_create_usuario(username=username)
 
-        #  Iniciar sesión en Django (esto crea la sesión)
         login(request, user)
 
         return JsonResponse({
             "mensaje": "Login exitoso",
-            "tokens": tokens,
+            "token": tokens.get('id_token'),
             "nuevo_usuario": True
         })
     else:
@@ -164,11 +164,11 @@ def get_or_create_usuario(username):
     import requests
 
 def obtener_token_management_api():
-    url = "https://dev-2huk2uien4i6jdxa.us.auth0.com/oauth/token"
+    url = f"https://{os.getenv('AUTHZ_DOMAIN')}/oauth/token"
     payload = {
-        "client_id": "rjAfrQ1Hy4hsvLn8GeUC4ZDtRyRtjsT6",
-        "client_secret": "_tr4RXV3PDlTMewwqd9nydsdznSbVsd0R8XFv33OgE57EWpJPqvsBrDYOHQZ7kHr",
-        "audience": "https://dev-2huk2uien4i6jdxa.us.auth0.com/api/v2/",
+        "client_id": f"{os.getenv('CLIENT_ID')}",
+        "client_secret": f"{os.getenv('CLIENT_SECRET')}",
+        "audience": f"https://{os.getenv('AUTHZ_DOMAIN')}/api/v2/",
         "grant_type": "client_credentials"
     }
     headers = {"content-type": "application/json"}
@@ -179,7 +179,7 @@ def obtener_token_management_api():
 
 
 def crear_usuario_management_api(username, password):
-    url = "https://dev-2huk2uien4i6jdxa.us.auth0.com/api/v2/users"
+    url = f"https://{os.getenv('AUTHZ_DOMAIN')}/api/v2/users"
     ACCESS_TOKEN = obtener_token_management_api()
     headers = {
         "Authorization": f"Bearer {ACCESS_TOKEN}",
@@ -198,56 +198,30 @@ def crear_usuario_management_api(username, password):
     print("RESPONSE TEXT crear:", response.text)
     return response.json()
 
-def obtener_token_usuario(username, password):
-    url = f"https://dev-2huk2uien4i6jdxa.us.auth0.com/oauth/token"
-    data = {
-        "grant_type": "password",
-        "username": username,
-        "password": password,
-        "audience": "http://localhost:8000/api", 
-        "client_id": "rjAfrQ1Hy4hsvLn8GeUC4ZDtRyRtjsT6",
-        "client_secret": "_tr4RXV3PDlTMewwqd9nydsdznSbVsd0R8XFv33OgE57EWpJPqvsBrDYOHQZ7kHr",
-        "scope": "openid profile email"
-    }
-    response = requests.post(url, json=data)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print("Error obteniendo token:", response.text)
-        return None
-    
+
 
 
 
 
 def verificar_token_auth0(token):
-    """
-    Verifica tokens generados por tu endpoint de Auth0
-    """
+ 
     try:
-        AUTH0_DOMAIN = "dev-2huk2uien4i6jdxa.us.auth0.com"
-        AUTH0_CLIENT_ID = "rjAfrQ1Hy4hsvLn8GeUC4ZDtRyRtjsT6"
         
-        jwks_url = f'https://{AUTH0_DOMAIN}/.well-known/jwks.json'
+        
+        jwks_url = f'https://{os.getenv('AUTHZ_DOMAIN')}/.well-known/jwks.json'
         jwks_client = jwt.PyJWKClient(jwks_url)
         
 
         signing_key = jwks_client.get_signing_key_from_jwt(token)
    
-        # payload = jwt.decode(
-        #     token,
-        #     signing_key.key,
-        #     algorithms=['RS256'],
-        #     audience="rjAfrQ1Hy4hsvLn8GeUC4ZDtRyRtjsT6", 
-        #     issuer=f'https://{AUTH0_DOMAIN}/'
-        # )
+       
         
         payload = jwt.decode(
             token,
             signing_key.key,
             algorithms=['RS256'],
-            audience=["http://localhost:8000/api","rjAfrQ1Hy4hsvLn8GeUC4ZDtRyRtjsT6"],
-            issuer=f'https://{AUTH0_DOMAIN}/'
+            audience=[os.getenv('AUTHZ_AUDIENCE'),os.getenv('CLIENT_ID')],
+            issuer=f'https://{os.getenv('AUTHZ_DOMAIN')}/'
         )
         
         return payload
@@ -260,9 +234,7 @@ def verificar_token_auth0(token):
         return {'error': f'Error verificando token: {str(e)}'}
 
 def token_requerido(f):
-    """
-    Decorador para métodos que requieren token válido
-    """
+
     @wraps(f)
     def decorador(request, *args, **kwargs):
         if hasattr(request, 'session') and 'access_token' in request.session:

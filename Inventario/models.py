@@ -100,7 +100,7 @@ class Pedido(models.Model):
             "estado": self.estado,
             "cliente": self.cliente_id,
             "factura": self.factura_id,
-            "items": list(self.items.values_list('id', flat=True)),
+            "items": list(self.items.values_list('sku', flat=True)),
         }
         return json.dumps(datos, sort_keys=True).encode()
 
@@ -114,12 +114,10 @@ class Pedido(models.Model):
         return hmac.new(INTEGRITY_KEY.encode(), self._datos_para_hash(), hashlib.sha256).hexdigest()
 
     def save(self, *args, **kwargs):
-        creando = self._state.adding
         super().save(*args, **kwargs)
-        if creando and not self.hash_de_integridad:
-            self.hash_de_integridad = self.generar_hash()
-            super().save(update_fields=['hash_de_integridad'])
-
+        self.hash_de_integridad = self.generar_hash()
+        super().save(update_fields=['hash_de_integridad'])
+        
 
     def verificar_integridad(self):
         print("codigo 1 "+self.hash_de_integridad)
