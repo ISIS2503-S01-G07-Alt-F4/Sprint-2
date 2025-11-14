@@ -117,12 +117,15 @@ class Pedido(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
-        # Solo recalcula el hash si no fue desactivado
+        if 'manage.py' in sys.argv:
+            return
         recalcular_hash = os.getenv("RECALCULAR_HASH")
+
         if recalcular_hash!=None:
+            print("recalculo")
+            print(recalcular_hash)
             self.hash_de_integridad = self.generar_hash()
             super().save(update_fields=['hash_de_integridad'])
-        
 
     def verificar_integridad(self):
         print("codigo 1 "+self.hash_de_integridad)
