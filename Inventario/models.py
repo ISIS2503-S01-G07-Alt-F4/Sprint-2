@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import json
 import os
+import sys
 from django.db import models
 
 from Provesi import settings
@@ -116,7 +117,6 @@ class Pedido(models.Model):
     
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-
         if 'manage.py' in sys.argv:
             return
         recalcular_hash = os.getenv("RECALCULAR_HASH")
