@@ -93,6 +93,7 @@ def crear_pedido_api(request):
 @csrf_exempt
 @api_view(['PUT'])
 @permission_classes([AllowAny]) 
+@token_requerido
 def cambiar_estado_pedido_api(request):
     """
     Endpoint para crear un nuevo pedido

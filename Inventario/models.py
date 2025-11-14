@@ -6,8 +6,9 @@ import sys
 from django.db import models
 
 from Provesi import settings
-
+from Provesi.middleware.current_request import get_current_request
 # Create your models here.
+
 
 class Bodega(models.Model):
     ciudad = models.CharField(max_length=100)
@@ -126,16 +127,25 @@ class Pedido(models.Model):
 
     
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        if 'manage.py' in sys.argv:
-            return
-        recalcular_hash = os.getenv("RECALCULAR_HASH")
+        # super().save(*args, **kwargs)
+        # if 'manage.py' in sys.argv:
+        #     return
+        # recalcular_hash = os.getenv("RECALCULAR_HASH")
 
-        if recalcular_hash!=None:
-            print("recalculo")
-            print(recalcular_hash)
-            self.hash_de_integridad = self.generar_hash()
-            super().save(update_fields=['hash_de_integridad'])
+        # if recalcular_hash!=None:
+        #     print("recalculo")
+        #     print(recalcular_hash)
+        #     self.hash_de_integridad = self.generar_hash()
+        #     super().save(update_fields=['hash_de_integridad'])
+        super().save(*args, **kwargs)
+        request = get_current_request()
+        if request is None:
+            return
+        if request.path.startswith("/admin/"):
+            return
+        
+        self.hash_de_integridad = self.generar_hash()
+        super().save(update_fields=["hash_de_integridad"])
 
     def verificar_integridad(self):
         print("codigo 1 "+self.hash_de_integridad)
@@ -164,6 +174,4 @@ class ProductoSolicitado(models.Model):
 #     ciudad = models.CharField(max_length=100)
 #     #imagen = models.ImageField(upload_to="envios/", null=True, blank=True) Esto de momento lo comentamos porque no sabemos como funciona
 #     fecha_envio = models.DateField()
-
-
 

@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'Provesi.middleware.current_request.CurrentRequestMiddleware',
 ]
 
 ROOT_URLCONF = 'Provesi.urls'
