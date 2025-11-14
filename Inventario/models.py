@@ -96,11 +96,21 @@ class Pedido(models.Model):
     hash_de_integridad = models.CharField(max_length=64, editable=False, null=True, blank=True)
 
     def _datos_para_hash(self):
+        datos_factura = None
+        if self.factura:
+            datos_factura = {
+                "id": self.factura.id,
+                "costo_total": self.factura.costo_total,
+                "metodo_pago": self.factura.metodo_pago,
+                "num_cuenta": self.factura.num_cuenta,
+                "comprobante": self.factura.comprobante,
+                "cliente_id": self.factura.cliente_id,
+            }
         datos = {
             "id": self.id,
             "estado": self.estado,
             "cliente": self.cliente_id,
-            "factura": self.factura_id,
+            "factura": datos_factura,
             "items": list(self.items.values_list('sku', flat=True)),
         }
         return json.dumps(datos, sort_keys=True).encode()
