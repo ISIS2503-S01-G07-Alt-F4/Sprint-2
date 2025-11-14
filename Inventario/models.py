@@ -126,17 +126,18 @@ class Pedido(models.Model):
         return hmac.new(INTEGRITY_KEY.encode(), self._datos_para_hash(), hashlib.sha256).hexdigest()
 
     
-    def save(self, *args, **kwargs):
-        # super().save(*args, **kwargs)
-        # if 'manage.py' in sys.argv:
-        #     return
-        # recalcular_hash = os.getenv("RECALCULAR_HASH")
+    # super().save(*args, **kwargs)
+    # if 'manage.py' in sys.argv:
+    #     return
+    # recalcular_hash = os.getenv("RECALCULAR_HASH")
 
-        # if recalcular_hash!=None:
-        #     print("recalculo")
-        #     print(recalcular_hash)
-        #     self.hash_de_integridad = self.generar_hash()
-        #     super().save(update_fields=['hash_de_integridad'])
+    # if recalcular_hash!=None:
+    #     print("recalculo")
+    #     print(recalcular_hash)
+    #     self.hash_de_integridad = self.generar_hash()
+    #     super().save(update_fields=['hash_de_integridad'])
+    def save(self, *args, **kwargs):
+        
         super().save(*args, **kwargs)
         request = get_current_request()
         if request is None:
