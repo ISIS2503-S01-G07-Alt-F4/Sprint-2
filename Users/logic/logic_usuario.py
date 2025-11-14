@@ -263,5 +263,5 @@ def token_requerido(f):
             return JsonResponse({'error': 'Usuario no encontrado en sistema'}, status=404)
         
         return f(request, *args, **kwargs)
-    
+    decorador.csrf_exempt = True
     return decorador
