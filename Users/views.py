@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.urls import reverse
 
 from Users.forms import UsuarioCreateForm, UsuarioLoginForm
-from Users.logic.logic_usuario import login_usuario, cerrar_sesion
+from Users.logic.logic_usuario import expedirTokenLogic, login_usuario, cerrar_sesion
 from Users.models import Usuario, JefeBodega, Operario
 from Users.logic.logic_usuario import create_usuario
 # Create your views here.
@@ -82,3 +82,10 @@ def usuario_create(request):
         form = UsuarioCreateForm()
     context = {'form': form}
     return render(request, 'Usuario/usuarioCreate.html', context)
+
+
+def expedirToken(request):
+    if request.method == 'GET':
+        return expedirTokenLogic(request)
+    else:
+        return Exception()

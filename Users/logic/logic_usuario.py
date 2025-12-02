@@ -265,3 +265,10 @@ def token_requerido(f):
         return f(request, *args, **kwargs)
     decorador.csrf_exempt = True
     return decorador
+
+def expedirTokenLogic(request):
+    token = request.session.get('id_token')
+    if not token:
+        return JsonResponse({"error": "No hay token en la sesión"}, status=400)
+
+    return JsonResponse({"token": token})
